@@ -1,7 +1,7 @@
-from src.masks import get_mask_account, get_mask_card_number
+from src.widget import get_date, mask_account_card
 
-card_number = "7000792289606361"
-number_account = "73654108430135874305"
+card = "Visa Gold 5999414228426353"
+print(mask_account_card(card))
 
-print(get_mask_card_number(card_number))
-print(get_mask_account(number_account))
+date = "2024-03-11T02:26:18.671407"
+print(get_date(date))
