@@ -22,7 +22,7 @@ mask_account_card
 ```
 Имеется функция для преобразования даты
 ```
-'get_date'
+get_date
 ```
 в файле ***'widget.py'*** (путь - src/widget.py) 
 
@@ -33,12 +33,12 @@ mask_account_card
 
 
 ### В проект создается на:
-*Pyton v 3.13.7*
-*Poetry v 2.1.4*
+*Pyton v 3.13.7*,
+*Poetry v 2.1.4*,
 
 
 ### Линтеры:
-*flake8 v 7.3.0*
-*black v 25.1.0*
-*isort v 6.0.1*
-*mypy v 1.17.1*
+*flake8 v 7.3.0*,
+*black v 25.1.0*,
+*isort v 6.0.1*,
+*mypy v 1.17.1*,
