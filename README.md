@@ -4,43 +4,41 @@
 Данный проект будет отражать работу
 банковских приложений.
 Реализованы функции, маскирующие: 
-номер карты 'get_mask_card_number',
-номер счета пользователя 'get_mask_account'.
-Путь - src/masks.py
+номер карты 
+```
+get_mask_card_number,
+```
+номер счета пользователя
+```
+get_mask_account.
+```
+***Путь - src/masks.py***
 
 Реализована валидация входных данных,
 их сортировка счет или номер карты
 для последующей работы с ними в функциях.
-'mask_account_card'
+```
+mask_account_card
+```
 Имеется функция для преобразования даты
+```
 'get_date'
-в файле 'widget.py' (путь - src/widget.py) 
-
-
-в проекте содержаться функции 
-для обработки словарей по ключу
-и бля сортировки словарей по дате
-(filter_by_state и 
-sort_by_date) они находятся в модуле src
-в файле processing.py
-
-
-Проверить работу функции можно в 'main.py'
+```
+в файле ***'widget.py'*** (путь - src/widget.py) 
 
 
 ### Клонирование репозитория
 Склонируйте репозиторий на ваш компьютер
-git clone https://github.com/Andrezhuko/homework
+[git clone] (https://github.com/Andrezhuko/homework)
 
 
 ### В проект создается на:
-Pyton v 3.13.7
-Poetry v 2.1.4
+*Pyton v 3.13.7*
+*Poetry v 2.1.4*
 
 
 ### Линтеры:
-flacke8
-flake8 v 7.3.0
-black v 25.1.0
-isort v 6.0.1
-mypy v 1.17.1
+*flake8 v 7.3.0*
+*black v 25.1.0*
+*isort v 6.0.1*
+*mypy v 1.17.1*
