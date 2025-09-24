@@ -26,6 +26,9 @@ mypy = "^1.17.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
 
+pytest-cov = "^7.0.0"
+
+
 [tool.black]
 # Максимальная длина строки
 line-length = 119
