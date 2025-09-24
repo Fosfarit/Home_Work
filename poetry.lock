@@ -73,6 +73,7 @@ files = [
 ]
 markers = {dev = "sys_platform == \"win32\"", lint = "platform_system == \"Windows\""}
 
+
 [[package]]
 name = "coverage"
 version = "7.10.6"
@@ -173,6 +174,7 @@ files = [
 
 [package.extras]
 toml = ["tomli ; python_full_version <= \"3.11.0a6\""]
+
 
 [[package]]
 name = "flake8"
@@ -422,6 +424,7 @@ pygments = ">=2.7.2"
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+
 name = "pytest-cov"
 version = "7.0.0"
 description = "Pytest plugin for measuring coverage."
@@ -442,6 +445,7 @@ pytest = ">=7"
 testing = ["process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
+
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -456,4 +460,7 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
+
 content-hash = "e1a882959768b4eb3ac1358cc7ee6cca6fcafbbc2321abe62085f356fb19b459"
+
+
