@@ -29,7 +29,7 @@ get_date
 
 ### Клонирование репозитория
 Склонируйте репозиторий на ваш компьютер
-[git clone] (https://github.com/Andrezhuko/homework)
+[git clone] (git@github.com:Fosfarit/Home_Work.git)
 
 
 ### В проект создается на:
