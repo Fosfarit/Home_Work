@@ -69,7 +69,7 @@ card_number_generator
 
 ### Клонирование репозитория
 Склонируйте репозиторий на ваш компьютер
-[git clone] (git@github.com:Fosfarit/Home__Work.git)
+[git clone] (git@github.com:Fosfarit/Home_Work.git)
 
 
 ### В проект создается на:
