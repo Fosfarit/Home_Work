@@ -2,8 +2,6 @@ from _pytest.capture import CaptureFixture
 
 from src.decorators import log
 
-from src.decorators import log
-
 
 @log()
 def func_div(a: float, b: float) -> float:
@@ -31,10 +29,13 @@ def test_log_console_error(capsys: CaptureFixture) -> None:
     assert "Inputs: (4, 0)" in captured.out
     assert "{}\n" in captured.out
 
+
 def test_log_preserves_function_behavior() -> None:
     """Тест, что декоратор не ломает основную функциональность функции"""
+
     @log()
     def add(a: int, b: int) -> int:
         return a + b
+
     result = add(2, 3)
     assert result == 5

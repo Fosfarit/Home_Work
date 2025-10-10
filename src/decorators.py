@@ -28,10 +28,12 @@ def log(filename=None) -> Callable:
             finally:
                 if log_text:
                     if filename:
-                        with open(filename, 'a', encoding='utf-8') as f:
+                        with open(filename, "a", encoding="utf-8") as f:
                             f.write(log_text)
                     else:
-                        print(log_text, end='')
+                        print(log_text, end="")
             return result
+
         return wrapper
+
     return decorator
