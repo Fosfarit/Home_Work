@@ -14,7 +14,7 @@ def log(filename=None) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             """
-            Функция обертки функции с логированием
+            Функция обертки с логированием
             """
             log_text = ""
             try:
