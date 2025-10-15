@@ -1,0 +1,2 @@
+my_function ok. Time: 0.000001s
+my_function ok. Time: 0.000001s

@@ -1,6 +1,5 @@
 import pytest
 
-
 @pytest.fixture
 def number_card() -> str:
     return "7000792289606361"
@@ -75,3 +74,18 @@ def transactions_list() -> list[dict]:
             "to": "Счет 14211924144426031657",
         },
     ]
+
+@pytest.fixture
+def mock_currency_api_response():
+    """Общая фикстура для мок-ответа API"""
+
+    def _mock_response(rate=95.5, amount=100):
+        return {
+            "success": True,
+            "query": {"from": "USD", "to": "RUB", "amount": amount},
+            "info": {"timestamp": 1699999999, "rate": rate},
+            "date": "2023-11-15",
+            "result": amount * rate,
+        }
+
+    return _mock_response
