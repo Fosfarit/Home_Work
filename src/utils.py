@@ -37,6 +37,6 @@ def read_json_file(path_to_json_file: str) -> Any | list:
         return []
 
 
-path_to_json_file = "../data/operations.json"
-result = read_json_file(path_to_json_file)
-print(result)
+# path_to_json_file = "../data/operations.json"
+# result = read_json_file(path_to_json_file)
+# print(result)

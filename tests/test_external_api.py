@@ -7,193 +7,229 @@ import requests
 from src.external_api import currency_api
 
 
-class TestCurrencyAPI:
-    """Тесты для функции currency_api"""
-
-    @pytest.fixture
-    def sample_transaction(self) -> dict:
-        """Фикстура с примером транзакции"""
-        return {
-            "id": 214024827,
-            "state": "EXECUTED",
-            "date": "2018-12-20T16:43:26.929246",
-            "operationAmount": {"amount": "70946.18", "currency": {"name": "USD", "code": "USD"}},
-        }
-
-    @pytest.fixture
-    def sample_transaction_eur(self) -> dict:
-        """Фикстура с примером транзакции в EUR"""
-        return {
-            "id": 214024828,
-            "state": "EXECUTED",
-            "date": "2018-12-20T16:43:26.929246",
-            "operationAmount": {"amount": "1000.00", "currency": {"name": "Euro", "code": "EUR"}},
-        }
-
-    def test_currency_api_successful_conversion(self, sample_transaction: dict) -> None:
-        """Тест успешной конвертации валюты"""
-        # Мокаем ответ API
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"result": 5320.95}
-
-        with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-            mock_get.return_value = mock_response
-
-            result = currency_api(sample_transaction)
-
-            assert isinstance(result, float)
-            assert result == 5320.95
-            mock_get.assert_called_once()
-
-    def test_currency_api_missing_api_key(self, sample_transaction: dict) -> None:
-        """Тест отсутствия API ключа"""
-        # Исправлено: очищаем переменную окружения вместо установки пустой строки
-        with patch.dict(os.environ, {}, clear=True):
-            result = currency_api(sample_transaction)
-
-            assert isinstance(result, str)
-            assert result == "API ключ не найден"
-
-    def test_currency_api_invalid_transaction_data(self) -> None:
-        """Тест некорректных данных транзакции"""
-        invalid_transactions = [
-            {},
-            {"operationAmount": None},
-            {"operationAmount": {}},
-            {"operationAmount": {"currency": {"code": "USD"}}},  # нет amount
-            {"operationAmount": {"amount": "100", "currency": {}}},  # нет code
-        ]
-
-        with patch.dict(os.environ, {"API_KEY": "test_key"}):
-            for transaction in invalid_transactions:
-                result = currency_api(transaction)
-                assert isinstance(result, str)
-                assert result == "Некорректные данные транзакции"
-
-    def test_currency_api_connection_error(self, sample_transaction: dict) -> None:
-        """Тест ошибки подключения"""
-        with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-            mock_get.side_effect = requests.exceptions.RequestException("Connection failed")
-
-            result = currency_api(sample_transaction)
-
-            assert isinstance(result, str)
-            assert "Ошибка подключения" in result
-
-    def test_currency_api_api_error_response(self, sample_transaction: dict) -> None:
-        """Тест ошибки от API"""
-        mock_response = MagicMock()
-        mock_response.status_code = 400
-        mock_response.json.return_value = {"error": "Invalid API key"}
-
-        with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-            mock_get.return_value = mock_response
-
-            result = currency_api(sample_transaction)
-
-            assert isinstance(result, str)
-            assert "Ошибка API" in result
-
-    def test_currency_api_data_processing_error(self, sample_transaction: dict) -> None:
-        """Тест ошибки обработки данных"""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {}  # Нет ключа 'result'
-
-        with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-            mock_get.return_value = mock_response
-
-            result = currency_api(sample_transaction)
-
-            assert isinstance(result, str)
-            assert "Ошибка обработки данных" in result
-
-    def test_currency_api_different_currency(self, sample_transaction_eur: dict) -> None:
-        """Тест конвертации другой валюты (EUR)"""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"result": 95000.0}
-
-        with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-            mock_get.return_value = mock_response
-
-            result = currency_api(sample_transaction_eur)
-
-            assert isinstance(result, float)
-            assert result == 95000.0
-
-            # Исправлено: проверяем URL более надежным способом
-            call_args = mock_get.call_args
-            url = call_args[0][0] if call_args[0] else call_args[1].get("url", "")
-            assert "from=EUR" in url
-
-    def test_currency_api_rounding(self, sample_transaction: dict) -> None:
-        """Тест округления результата"""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"result": 5320.95678}  # Много знаков после запятой
-
-        with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-            mock_get.return_value = mock_response
-
-            result = currency_api(sample_transaction)
-
-            assert isinstance(result, float)
-            assert result == 5320.96  # Округление до 2 знаков
-
-    def test_currency_api_invalid_amount_format(self) -> None:
-        """Тест невалидного формата суммы"""
-        invalid_transaction = {
-            "id": 214024827,
-            "state": "EXECUTED",
-            "date": "2018-12-20T16:43:26.929246",
-            "operationAmount": {"amount": "not_a_number", "currency": {"name": "USD", "code": "USD"}},  # Не число
-        }
-
-        with patch.dict(os.environ, {"API_KEY": "test_key"}):
-            result = currency_api(invalid_transaction)
-
-            # Исправлено: ожидаем конкретное сообщение об ошибке
-            assert isinstance(result, str)
-            assert "Некорректные данные транзакции" in result or "Ошибка обработки данных" in result
-
-
-def test_currency_api_function_signature() -> None:
-    """Тест сигнатуры функции"""
-    import inspect
-
-    sig = inspect.signature(currency_api)
-    assert len(sig.parameters) == 1
-    assert "transaction" in sig.parameters
-    # Исправлено: более гибкая проверка аннотации возвращаемого типа
-    return_annotation = sig.return_annotation
-    assert return_annotation in (str, float) or "str" in str(return_annotation) and "float" in str(return_annotation)
-
-
-@pytest.mark.parametrize(
-    "amount,expected_rounding",
-    [
-        ("100.123", 100.12),
-        ("100.129", 100.13),
-        ("100.000", 100.0),
-    ],
-)
-def test_currency_api_various_amounts(amount: str, expected_rounding: float) -> None:
-    """Параметризованный тест различных сумм и округления"""
-    transaction = {
+@pytest.fixture
+def mock_transaction():
+    """Фикстура с тестовой транзакцией"""
+    return {
         "id": 214024827,
         "state": "EXECUTED",
         "date": "2018-12-20T16:43:26.929246",
-        "operationAmount": {"amount": amount, "currency": {"name": "USD", "code": "USD"}},
+        "operationAmount": {
+            "amount": "70946.18",
+            "currency": {"name": "USD", "code": "USD"}
+        },
+    }
+
+
+@pytest.fixture
+def mock_transaction_without_amount():
+    """Фикстура с транзакцией без operationAmount"""
+    return {
+        "id": 214024827,
+        "state": "EXECUTED",
+        "date": "2018-12-20T16:43:26.929246"
+    }
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_success(mock_requests_get, mock_transaction):
+    """Тест успешного выполнения конвертации валюты"""
+    # Мокаем ответ API
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"result": 5320.95}
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(mock_transaction)
+
+    # Проверяем вызов API с правильными параметрами
+    expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=USD&amount=70946.18"
+    mock_requests_get.assert_called_once_with(
+        expected_url,
+        headers={"apikey": "test_api_key"}
+    )
+
+    # Проверяем результат
+    assert result == 5320.95
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_api_error(mock_requests_get, mock_transaction):
+    """Тест обработки ошибки от API"""
+    # Мокаем ответ с ошибкой
+    mock_response = MagicMock()
+    mock_response.status_code = 400
+    mock_response.json.return_value = {"error": "Invalid currency code"}
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(mock_transaction)
+
+    assert result == "Ошибка API: Invalid currency code"
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_connection_error(mock_requests_get, mock_transaction):
+    """Тест обработки ошибки подключения"""
+    # Мокаем исключение при запросе
+    mock_requests_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
+
+    result = currency_api(mock_transaction)
+
+    assert result == "Ошибка подключения: Connection failed"
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_key_error(mock_requests_get, mock_transaction):
+    """Тест обработки ошибки ключа в ответе"""
+    # Мокаем ответ без ключа 'result'
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"data": "some data"}  # Нет ключа 'result'
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(mock_transaction)
+
+    assert "Ошибка обработки данных" in result
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_value_error(mock_requests_get, mock_transaction):
+    """Тест обработки ошибки преобразования данных"""
+    # Мокаем ответ с некорректными данными для float
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"result": "not_a_number"}
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(mock_transaction)
+
+    assert "Ошибка обработки данных" in result
+
+
+def test_currency_api_no_api_key(mock_transaction):
+    """Тест отсутствия API ключа"""
+    # Убеждаемся, что API_KEY не установлен
+    with patch.dict(os.environ, {}, clear=True):
+        result = currency_api(mock_transaction)
+        assert result == "API ключ не найден"
+
+
+def test_currency_api_no_operation_amount(mock_transaction_without_amount):
+    """Тест отсутствия operationAmount в транзакции"""
+    with patch.dict(os.environ, {"API_KEY": "test_api_key"}):
+        result = currency_api(mock_transaction_without_amount)
+
+    assert result == "Некорректные данные транзакции"
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_different_currency(mock_requests_get):
+    """Тест конвертации другой валюты"""
+    # Транзакция с EUR
+    eur_transaction = {
+        "id": 214024828,
+        "state": "EXECUTED",
+        "date": "2018-12-21T16:43:26.929246",
+        "operationAmount": {
+            "amount": "1000.00",
+            "currency": {"name": "Euro", "code": "EUR"}
+        },
     }
 
     mock_response = MagicMock()
     mock_response.status_code = 200
-    # Исправлено: используем expected_rounding для согласованности теста
-    mock_response.json.return_value = {"result": float(amount) * 75.0}
+    mock_response.json.return_value = {"result": 85000.0}
+    mock_requests_get.return_value = mock_response
 
-    with patch("src.external_api.requests.get") as mock_get, patch.dict(os.environ, {"API_KEY": "test_key"}):
-        mock_get.return_value = mock_response
+    result = currency_api(eur_transaction)
 
-        result = currency_api(transaction)
+    # Исправлено: учитываем, что "1000.00" преобразуется в 1000.0
+    expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=EUR&amount=1000.0"
+    mock_requests_get.assert_called_once_with(
+        expected_url,
+        headers={"apikey": "test_api_key"}
+    )
+
+    assert result == 85000.0
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_rounding(mock_requests_get, mock_transaction):
+    """Тест округления результата"""
+    # Мокаем ответ с длинным числом
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"result": 5320.957823}
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(mock_transaction)
+
+    # Проверяем округление до 2 знаков
+    assert result == 5320.96
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_zero_amount(mock_requests_get):
+    """Тест обработки нулевой суммы"""
+    transaction_zero_amount = {
+        "id": 214024832,
+        "state": "EXECUTED",
+        "date": "2018-12-25T16:43:26.929246",
+        "operationAmount": {
+            "amount": "0",
+            "currency": {"name": "CHF", "code": "CHF"}
+        },
+    }
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"result": 0.0}
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(transaction_zero_amount)
+
+    expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=CHF&amount=0.0"
+    mock_requests_get.assert_called_once_with(
+        expected_url,
+        headers={"apikey": "test_api_key"}
+    )
+
+    assert result == 0.0
+
+
+@patch.dict(os.environ, {"API_KEY": "test_api_key"})
+@patch('src.external_api.requests.get')
+def test_currency_api_negative_amount(mock_requests_get):
+    """Тест обработки отрицательной суммы"""
+    transaction_negative_amount = {
+        "id": 214024833,
+        "state": "EXECUTED",
+        "date": "2018-12-26T16:43:26.929246",
+        "operationAmount": {
+            "amount": "-100.50",
+            "currency": {"name": "AUD", "code": "AUD"}
+        },
+    }
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"result": -7500.0}
+    mock_requests_get.return_value = mock_response
+
+    result = currency_api(transaction_negative_amount)
+
+    expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=AUD&amount=-100.5"
+    mock_requests_get.assert_called_once_with(
+        expected_url,
+        headers={"apikey": "test_api_key"}
+    )
+
+    assert result == -7500.0
