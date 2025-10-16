@@ -14,3 +14,8 @@ def read_json_file(path_to_json_file: str) -> Any | list:
         if type(data) is not list:
             return []
         return data
+
+
+# path_to_json_file = "../data/operations.json"
+#
+# print(read_json_file(path_to_json_file))

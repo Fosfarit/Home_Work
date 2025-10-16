@@ -1,4 +1,5 @@
 import os
+
 import requests
 from dotenv import load_dotenv
 
@@ -47,13 +48,7 @@ def currency_api(transaction: dict) -> str | float:
 #     "id": 214024827,
 #     "state": "EXECUTED",
 #     "date": "2018-12-20T16:43:26.929246",
-#     "operationAmount": {
-#         "amount": "70946.18",
-#         "currency": {
-#             "name": "USD",
-#             "code": "USD"
-#         }
-#     }
+#     "operationAmount": {"amount": "70946.18", "currency": {"name": "USD", "code": "USD"}},
 # }
 #
 # print(currency_api(transaction))
