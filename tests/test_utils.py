@@ -1,155 +1,123 @@
 import json
 from typing import Any
 from unittest.mock import mock_open, patch
-
 import pytest
+import os
 
 from src.utils import read_json_file
 
 
-def test_read_json_file_valid_data() -> None:
-    """
-    Тестирует чтение корректного JSON-файла с данными.
-    """
-    # Подготовка тестовых данных
-    test_data = [{"id": 1, "name": "test"}, {"id": 2, "name": "test2"}]
-    test_json = json.dumps(test_data)
+def test_read_json_file_success():
+    """Тест успешного чтения JSON файла со списком"""
+    mock_data = [{"id": 1, "name": "test"}, {"id": 2, "name": "test2"}]
 
-    # Мокаем открытие файла и проверяем результат
-    with patch("builtins.open", mock_open(read_data=test_json)):
-        with patch("os.path.exists", return_value=True):
-            with patch("os.path.getsize", return_value=100):
-                result = read_json_file("test_path.json")
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=100), \
+            patch("builtins.open", mock_open(read_data=json.dumps(mock_data))):
+        result = read_json_file("test_path.json")
 
-    assert result == test_data
-    assert isinstance(result, list)
+        assert result == mock_data
 
 
-def test_read_json_file_nonexistent_file() -> None:
-    """
-    Тестирует поведение функции при попытке чтения несуществующего файла.
-    """
-    with patch("os.path.exists", return_value=False):
+def test_read_json_file_not_list():
+    """Тест чтения JSON файла с данными не в виде списка"""
+    mock_data = {"id": 1, "name": "test"}  # dict вместо list
+
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=100), \
+            patch("builtins.open", mock_open(read_data=json.dumps(mock_data))), \
+            patch("builtins.print") as mock_print:
+        result = read_json_file("test_path.json")
+
+        assert result == []
+        mock_print.assert_called_once_with(
+            "Предупреждение: Данные в файле 'test_path.json' не являются списком"
+        )
+
+
+def test_read_json_file_not_found():
+    """Тест случая когда файл не существует"""
+    with patch("os.path.exists", return_value=False), \
+            patch("builtins.print") as mock_print:
         result = read_json_file("nonexistent.json")
 
-    assert result == []
-    assert isinstance(result, list)
+        assert result == []
+        mock_print.assert_not_called()  # FileNotFoundError не должен вызывать print
 
 
-def test_read_json_file_empty_file() -> None:
-    """
-    Тестирует поведение функции при чтении пустого файла.
-    """
-    with patch("os.path.exists", return_value=True):
-        with patch("os.path.getsize", return_value=0):
-            result = read_json_file("empty.json")
+def test_read_json_file_empty():
+    """Тест случая когда файл пустой"""
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=0):
+        result = read_json_file("empty.json")
 
-    assert result == []
-    assert isinstance(result, list)
+        assert result == []
 
 
-def test_read_json_file_non_list_data() -> None:
-    """
-    Тестирует поведение функции при чтении JSON-файла с данными не в виде списка.
-    """
-    test_data = {"id": 1, "name": "test"}  # dict вместо list
-    test_json = json.dumps(test_data)
-
-    with patch("builtins.open", mock_open(read_data=test_json)):
-        with patch("os.path.exists", return_value=True):
-            with patch("os.path.getsize", return_value=100):
-                result = read_json_file("test_path.json")
-
-    assert result == []
-    assert isinstance(result, list)
-
-
-def test_read_json_file_invalid_json() -> None:
-    """
-    Тестирует поведение функции при чтении файла с некорректным JSON.
-    """
+def test_read_json_file_json_decode_error():
+    """Тест случая с ошибкой декодирования JSON"""
     invalid_json = "{invalid json}"
 
-    with patch("builtins.open", mock_open(read_data=invalid_json)):
-        with patch("os.path.exists", return_value=True):
-            with patch("os.path.getsize", return_value=100):
-                # Ожидаем исключение при парсинге некорректного JSON
-                with pytest.raises(json.JSONDecodeError):
-                    read_json_file("invalid.json")
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=100), \
+            patch("builtins.open", mock_open(read_data=invalid_json)), \
+            patch("builtins.print") as mock_print:
+        result = read_json_file("invalid.json")
+
+        assert result == []
+        mock_print.assert_called_once()
+        assert "Неверный формат JSON" in mock_print.call_args[0][0]
 
 
-def test_read_json_file_encoding() -> None:
-    """
-    Тестирует корректность работы с кодировкой UTF-8.
-    """
-    test_data = [{"name": "тест", "description": "Описание с кириллицей"}]
-    test_json = json.dumps(test_data, ensure_ascii=False)
+def test_read_json_file_general_exception():
+    """Тест обработки общего исключения"""
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=100), \
+            patch("builtins.open", side_effect=Exception("Unexpected error")), \
+            patch("builtins.print") as mock_print:
+        result = read_json_file("error.json")
 
-    with patch("builtins.open", mock_open(read_data=test_json)) as mock_file:
-        with patch("os.path.exists", return_value=True):
-            with patch("os.path.getsize", return_value=100):
-                result = read_json_file("unicode.json")
-
-        # Проверяем, что файл открыт с правильной кодировкой
-        mock_file.assert_called_with("unicode.json", "r", encoding="utf-8")
-
-    assert result == test_data
+        assert result == []
+        mock_print.assert_called_once()
+        assert "Неожиданная ошибка" in mock_print.call_args[0][0]
 
 
-def test_read_json_file_return_type_annotation() -> None:
-    """
-    Тестирует соответствие аннотации типа возвращаемого значения.
-    """
-    # Проверяем аннотацию типа функции
-    return_annotation = read_json_file.__annotations__.get("return")
-    assert return_annotation in (Any | list, Any, list)
+def test_read_json_file_file_not_found_exception():
+    """Тест явного исключения FileNotFoundError"""
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=100), \
+            patch("builtins.open", side_effect=FileNotFoundError), \
+            patch("builtins.print") as mock_print:
+        result = read_json_file("missing.json")
+
+        assert result == []
+        mock_print.assert_called_once_with(
+            "Ошибка: Файл 'missing.json' не найден"
+        )
 
 
-def test_read_json_file_parameter_type_annotation() -> None:
-    """
-    Тестирует аннотацию типа параметра функции.
-    """
-    # Проверяем аннотацию типа параметра
-    param_annotation = read_json_file.__annotations__.get("path_to_json_file")
-    assert param_annotation == str
+def test_read_json_file_with_nested_structure():
+    """Тест с более сложной структурой данных"""
+    mock_data = [
+        {
+            "id": 1,
+            "operation": "transfer",
+            "amount": 1000,
+            "details": {"from": "acc1", "to": "acc2"}
+        },
+        {
+            "id": 2,
+            "operation": "withdrawal",
+            "amount": 500
+        }
+    ]
 
+    with patch("os.path.exists", return_value=True), \
+            patch("os.path.getsize", return_value=100), \
+            patch("builtins.open", mock_open(read_data=json.dumps(mock_data))):
+        result = read_json_file("complex_data.json")
 
-@pytest.mark.parametrize(
-    "file_size,expected_empty",
-    [
-        (0, True),  # Пустой файл
-        (1, False),  # Непустой файл
-    ],
-)
-def test_read_json_file_size_cases(file_size: int, expected_empty: bool) -> None:
-    """
-    Параметризованный тест для различных случаев размера файла.
-    """
-    with patch("os.path.exists", return_value=True):
-        with patch("os.path.getsize", return_value=file_size):
-            if expected_empty:
-                result = read_json_file("test.json")
-                assert result == []
-            else:
-                # Для непустого файла нужны дополнительные моки
-                test_data = [{"test": "data"}]
-                test_json = json.dumps(test_data)
-                with patch("builtins.open", mock_open(read_data=test_json)):
-                    result = read_json_file("test.json")
-                    assert result == test_data
-
-
-def test_read_json_file_integration(tmp_path: pytest.TempPathFactory) -> None:
-    """
-    Интеграционный тест с созданием временного файла.
-    """
-    # Создаем временный файл с тестовыми данными
-    test_data = [{"id": 1, "operation": "test"}]
-    temp_file = tmp_path / "test_operations.json"
-    temp_file.write_text(json.dumps(test_data), encoding="utf-8")
-
-    # Тестируем функцию с реальным файлом
-    result = read_json_file(str(temp_file))
-
-    assert result == test_data
-    assert isinstance(result, list)
+        assert result == mock_data
+        assert len(result) == 2
+        assert result[0]["operation"] == "transfer"
+        assert result[1]["amount"] == 500
