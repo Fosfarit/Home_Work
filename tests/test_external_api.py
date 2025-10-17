@@ -14,25 +14,18 @@ def mock_transaction():
         "id": 214024827,
         "state": "EXECUTED",
         "date": "2018-12-20T16:43:26.929246",
-        "operationAmount": {
-            "amount": "70946.18",
-            "currency": {"name": "USD", "code": "USD"}
-        },
+        "operationAmount": {"amount": "70946.18", "currency": {"name": "USD", "code": "USD"}},
     }
 
 
 @pytest.fixture
 def mock_transaction_without_amount():
     """Фикстура с транзакцией без operationAmount"""
-    return {
-        "id": 214024827,
-        "state": "EXECUTED",
-        "date": "2018-12-20T16:43:26.929246"
-    }
+    return {"id": 214024827, "state": "EXECUTED", "date": "2018-12-20T16:43:26.929246"}
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_success(mock_requests_get, mock_transaction):
     """Тест успешного выполнения конвертации валюты"""
     # Мокаем ответ API
@@ -45,17 +38,14 @@ def test_currency_api_success(mock_requests_get, mock_transaction):
 
     # Проверяем вызов API с правильными параметрами
     expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=USD&amount=70946.18"
-    mock_requests_get.assert_called_once_with(
-        expected_url,
-        headers={"apikey": "test_api_key"}
-    )
+    mock_requests_get.assert_called_once_with(expected_url, headers={"apikey": "test_api_key"})
 
     # Проверяем результат
     assert result == 5320.95
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_api_error(mock_requests_get, mock_transaction):
     """Тест обработки ошибки от API"""
     # Мокаем ответ с ошибкой
@@ -70,7 +60,7 @@ def test_currency_api_api_error(mock_requests_get, mock_transaction):
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_connection_error(mock_requests_get, mock_transaction):
     """Тест обработки ошибки подключения"""
     # Мокаем исключение при запросе
@@ -82,7 +72,7 @@ def test_currency_api_connection_error(mock_requests_get, mock_transaction):
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_key_error(mock_requests_get, mock_transaction):
     """Тест обработки ошибки ключа в ответе"""
     # Мокаем ответ без ключа 'result'
@@ -97,7 +87,7 @@ def test_currency_api_key_error(mock_requests_get, mock_transaction):
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_value_error(mock_requests_get, mock_transaction):
     """Тест обработки ошибки преобразования данных"""
     # Мокаем ответ с некорректными данными для float
@@ -128,7 +118,7 @@ def test_currency_api_no_operation_amount(mock_transaction_without_amount):
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_different_currency(mock_requests_get):
     """Тест конвертации другой валюты"""
     # Транзакция с EUR
@@ -136,10 +126,7 @@ def test_currency_api_different_currency(mock_requests_get):
         "id": 214024828,
         "state": "EXECUTED",
         "date": "2018-12-21T16:43:26.929246",
-        "operationAmount": {
-            "amount": "1000.00",
-            "currency": {"name": "Euro", "code": "EUR"}
-        },
+        "operationAmount": {"amount": "1000.00", "currency": {"name": "Euro", "code": "EUR"}},
     }
 
     mock_response = MagicMock()
@@ -151,16 +138,13 @@ def test_currency_api_different_currency(mock_requests_get):
 
     # Исправлено: учитываем, что "1000.00" преобразуется в 1000.0
     expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=EUR&amount=1000.0"
-    mock_requests_get.assert_called_once_with(
-        expected_url,
-        headers={"apikey": "test_api_key"}
-    )
+    mock_requests_get.assert_called_once_with(expected_url, headers={"apikey": "test_api_key"})
 
     assert result == 85000.0
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_rounding(mock_requests_get, mock_transaction):
     """Тест округления результата"""
     # Мокаем ответ с длинным числом
@@ -176,17 +160,14 @@ def test_currency_api_rounding(mock_requests_get, mock_transaction):
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_zero_amount(mock_requests_get):
     """Тест обработки нулевой суммы"""
     transaction_zero_amount = {
         "id": 214024832,
         "state": "EXECUTED",
         "date": "2018-12-25T16:43:26.929246",
-        "operationAmount": {
-            "amount": "0",
-            "currency": {"name": "CHF", "code": "CHF"}
-        },
+        "operationAmount": {"amount": "0", "currency": {"name": "CHF", "code": "CHF"}},
     }
 
     mock_response = MagicMock()
@@ -197,26 +178,20 @@ def test_currency_api_zero_amount(mock_requests_get):
     result = currency_api(transaction_zero_amount)
 
     expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=CHF&amount=0.0"
-    mock_requests_get.assert_called_once_with(
-        expected_url,
-        headers={"apikey": "test_api_key"}
-    )
+    mock_requests_get.assert_called_once_with(expected_url, headers={"apikey": "test_api_key"})
 
     assert result == 0.0
 
 
 @patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch('src.external_api.requests.get')
+@patch("src.external_api.requests.get")
 def test_currency_api_negative_amount(mock_requests_get):
     """Тест обработки отрицательной суммы"""
     transaction_negative_amount = {
         "id": 214024833,
         "state": "EXECUTED",
         "date": "2018-12-26T16:43:26.929246",
-        "operationAmount": {
-            "amount": "-100.50",
-            "currency": {"name": "AUD", "code": "AUD"}
-        },
+        "operationAmount": {"amount": "-100.50", "currency": {"name": "AUD", "code": "AUD"}},
     }
 
     mock_response = MagicMock()
@@ -227,9 +202,6 @@ def test_currency_api_negative_amount(mock_requests_get):
     result = currency_api(transaction_negative_amount)
 
     expected_url = "https://api.apilayer.com/exchangerates_data/convert?to=RUB&from=AUD&amount=-100.5"
-    mock_requests_get.assert_called_once_with(
-        expected_url,
-        headers={"apikey": "test_api_key"}
-    )
+    mock_requests_get.assert_called_once_with(expected_url, headers={"apikey": "test_api_key"})
 
     assert result == -7500.0
