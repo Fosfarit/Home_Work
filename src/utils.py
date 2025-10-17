@@ -9,10 +9,6 @@ def read_json_file(path_to_json_file: str) -> Any | list:
     """
 
     try:
-        # Проверка существования файла
-        if not os.path.exists(path_to_json_file) or os.path.getsize(path_to_json_file) == 0:
-            return []
-
         # Чтение и парсинг JSON файла
         with open(path_to_json_file, "r", encoding="utf-8") as pyton_file_about_the_operations:
             data = json.load(pyton_file_about_the_operations)
@@ -37,6 +33,6 @@ def read_json_file(path_to_json_file: str) -> Any | list:
         return []
 
 
-# path_to_json_file = "../data/operations.json"
-# result = read_json_file(path_to_json_file)
-# print(result)
+path_to_json_file = "../data/operations.json"
+result = read_json_file(path_to_json_file)
+print(result)
