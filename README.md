@@ -75,6 +75,16 @@ log
 ```
 wrapper
 ``` 
+****Создана функция для чтения JSON - файла из пакета data (путь - src/utils.py)****
+```
+read_json_file
+```
+****Создана функция конвертации валюты (путь - src/external_api.py)****
+```
+currency_api
+```
+
+
 
 ### Клонирование репозитория
 Склонируйте репозиторий на ваш компьютер
@@ -96,9 +106,3 @@ wrapper
 ###Тесты:
 *pytest v 8.4.2*,
 *pytest-cov v7.0.0*
-
-  - Updating click (8.2.1 -> 8.3.0)
-  - Updating coverage (7.10.6 -> 7.10.7)
-  - Installing pytokens (0.1.10)
-  - Updating black (25.1.0 -> 25.9.0)
-  - Updating mypy (1.17.1 -> 1.18.2)
