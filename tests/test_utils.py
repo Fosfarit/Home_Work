@@ -3,9 +3,10 @@ import json
 # from typing import Any
 from unittest.mock import mock_open, patch
 
+from src.utils import read_json_file
+
 # import pytest
 
-from src.utils import read_json_file
 
 
 def test_read_json_file_success():
