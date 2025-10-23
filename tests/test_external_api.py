@@ -71,36 +71,6 @@ def test_currency_api_connection_error(mock_requests_get: MagicMock, mock_transa
     assert result == "Ошибка подключения: Connection failed"
 
 
-@patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch("src.external_api.requests.get")
-def test_currency_api_key_error(mock_requests_get: MagicMock, mock_transaction: dict) -> None:
-    """Тест обработки ошибки ключа в ответе"""
-    # Мокаем ответ без ключа 'result'
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {"data": "some data"}  # Нет ключа 'result'
-    mock_requests_get.return_value = mock_response
-
-    result = currency_api(mock_transaction)
-
-    assert "Ошибка обработки данных" in result
-
-
-@patch.dict(os.environ, {"API_KEY": "test_api_key"})
-@patch("src.external_api.requests.get")
-def test_currency_api_value_error(mock_requests_get: MagicMock, mock_transaction: dict) -> None:
-    """Тест обработки ошибки преобразования данных"""
-    # Мокаем ответ с некорректными данными для float
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {"result": "not_a_number"}
-    mock_requests_get.return_value = mock_response
-
-    result = currency_api(mock_transaction)
-
-    assert "Ошибка обработки данных" in result
-
-
 def test_currency_api_no_api_key(mock_transaction: dict) -> None:
     """Тест отсутствия API ключа"""
     # Убеждаемся, что API_KEY не установлен

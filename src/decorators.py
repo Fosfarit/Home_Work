@@ -1,21 +1,15 @@
 from functools import wraps
 from time import time
-from typing import Any, Callable
+from typing import Any, Callable, Optional, TypeVar
+
+T = TypeVar("T")
 
 
-def log(filename=None) -> Callable:
-    def decorator(func):
-        """
-        Декоратор для логирования выполнения функций.
-        Записывает в лог информацию об успешном выполнении функции или об ошибке,
-        включая время выполнения и переданные аргументы.
-        """
-
+def log(filename: Optional[str] = None) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            """
-            Функция обертки с логированием
-            """
+        def wrapper(*args: Any, **kwargs: Any) -> T:
+            result: Optional[T] = None
             log_text = ""
             try:
                 time_start = time()
@@ -32,6 +26,10 @@ def log(filename=None) -> Callable:
                             f.write(log_text)
                     else:
                         print(log_text, end="")
+
+            # Гарантируем, что result не None при успешном выполнении
+            if result is None:
+                raise RuntimeError("Function completed successfully but returned None")
             return result
 
         return wrapper

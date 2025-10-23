@@ -1,9 +1,9 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, Hashable, List
 
 import pandas as pd
 
 
-def read_CSV_file(transactions_csv: str) -> List[Dict[str, Any]]:
+def read_CSV_file(transactions_csv: str) -> List[Dict[Hashable, Any]]:
     """Функция прочитывает файл в формате csv и возвращает список словарей с транзакциями"""
     if not isinstance(transactions_csv, str):
         raise TypeError("Путь к файлу должен быть строкой")
@@ -20,7 +20,7 @@ def read_CSV_file(transactions_csv: str) -> List[Dict[str, Any]]:
 # print(read_CSV_file(transactions_csv))
 
 
-def read_xlsx_file(transactions_xlsx: str) -> List[Dict[str, Any]]:
+def read_xlsx_file(transactions_xlsx: str) -> List[Dict[Hashable, Any]]:
     """Функция прочитывает файл в формате xlsx и возвращает список словарей с транзакциями"""
     if not isinstance(transactions_xlsx, str):
         raise TypeError("Путь к файлу должен быть строкой")
