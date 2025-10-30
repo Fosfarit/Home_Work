@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict
+from typing import Dict, List
 
 
 def process_bank_search(data: List[Dict], search: str) -> List[Dict]:
@@ -22,8 +22,9 @@ def process_bank_search(data: List[Dict], search: str) -> List[Dict]:
 
         # Фильтруем операции, где описание содержит искомую строку
         filtered_data = [
-            operation for operation in data
-            if operation.get('description') and pattern.search(operation['description'])
+            operation
+            for operation in data
+            if operation.get("description") and pattern.search(operation["description"])
         ]
 
         return filtered_data
@@ -40,7 +41,7 @@ def process_bank_operations_advanced(data: list[dict], categories: list, case_se
     category_count = {category: 0 for category in categories}
 
     for operation in data:
-        description = operation.get('description')
+        description = operation.get("description")
         if not description:
             continue
 
